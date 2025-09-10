@@ -1,0 +1,40 @@
+{
+  "name": "ray-tracer",
+  "version": "1.0.0",
+  "description": "Educational template for Raydium liquidity provision on Solana",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "bun run build && node dist/index.js",
+    "dev": "bun run build && node dist/index.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "solana",
+    "raydium",
+    "liquidity",
+    "defi",
+    "typescript",
+    "cli",
+    "educational"
+  ],
+  "author": "Ray Tracer Educational Template",
+  "license": "MIT",
+  "dependencies": {
+    "@raydium-io/raydium-sdk-v2": "^0.1.82-alpha",
+    "@solana/web3.js": "^1.87.0",
+    "@solana/spl-token": "^0.3.9",
+    "dotenv": "^16.0.0",
+    "bs58": "^5.0.0",
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/bs58": "^4.0.4",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
