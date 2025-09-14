@@ -80,7 +80,7 @@ export class TokenService {
         isNative: false,
         supply: parsedData.parsed.info.supply ? 
           parseFloat(parsedData.parsed.info.supply) / Math.pow(10, parsedData.parsed.info.decimals) : 
-          undefined
+          0
       };
 
       this.tokenCache.set(mintStr, tokenInfo);

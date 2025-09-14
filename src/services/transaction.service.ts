@@ -1,7 +1,7 @@
-import { 
-  Connection, 
-  Transaction, 
-  VersionedTransaction, 
+import {
+  Connection,
+  Transaction,
+  VersionedTransaction,
   TransactionSignature,
   SendOptions,
   Commitment,
@@ -55,8 +55,8 @@ export class TransactionService {
 
         // Send transaction
         const signature = await this.sendTransaction(transaction, {
-          skipPreflight: options.skipPreflight,
-          preflightCommitment: options.preflightCommitment
+          skipPreflight: options.skipPreflight ?? false,
+          preflightCommitment: options.preflightCommitment ?? 'confirmed'
         });
 
         this.logger.verbose(`Transaction sent: ${signature}`);
@@ -71,7 +71,7 @@ export class TransactionService {
 
         // Wait for confirmation
         const confirmed = await this.confirmTransaction(signature);
-        
+
         if (confirmed) {
           this.logger.verbose(`Transaction confirmed: ${signature}`);
           return {
@@ -84,7 +84,7 @@ export class TransactionService {
 
       } catch (error) {
         lastError = error as Error;
-        
+
         if (attempt < maxRetries) {
           const delay = this.calculateRetryDelay(attempt);
           this.logger.verbose(`Retry ${attempt} failed: ${error}. Waiting ${delay}ms...`);
@@ -107,10 +107,10 @@ export class TransactionService {
   ): Promise<{ success: boolean; error?: string; logs?: string[] }> {
     try {
       this.logger.verbose('Simulating transaction...');
-      
+
       const result = await this.connection.simulateTransaction(
         transaction as VersionedTransaction,
-        { 
+        {
           commitment: env.commitmentLevel,
           sigVerify: false
         }
@@ -119,7 +119,7 @@ export class TransactionService {
       if (result.value.err) {
         const errorMsg = this.parseTransactionError(result.value.err);
         this.logger.verbose(`Simulation failed: ${errorMsg}`);
-        
+
         return {
           success: false,
           error: errorMsg,
@@ -128,7 +128,7 @@ export class TransactionService {
       }
 
       this.logger.verbose(`Simulation successful. Compute units: ${result.value.unitsConsumed || 'unknown'}`);
-      
+
       return {
         success: true,
         logs: result.value.logs || []
@@ -173,10 +173,10 @@ export class TransactionService {
   ): Promise<boolean> {
     try {
       this.logger.verbose(`Waiting for transaction confirmation: ${signature}`);
-      
+
       const startTime = Date.now();
       const latestBlockhash = await this.connection.getLatestBlockhash(env.commitmentLevel);
-      
+
       // Use the newer confirmTransaction method
       const confirmation = await this.connection.confirmTransaction({
         signature,
@@ -203,7 +203,7 @@ export class TransactionService {
       const computePriceIx = ComputeBudgetProgram.setComputeUnitPrice({
         microLamports: env.priorityFeeMicroLamports
       });
-      
+
       // Add reasonable compute unit limit
       const computeLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
         units: 300000
@@ -233,13 +233,24 @@ export class TransactionService {
         return { confirmed: false };
       }
 
-      return {
-        confirmed: status.value.confirmationStatus === 'confirmed' || 
-                  status.value.confirmationStatus === 'finalized',
-        slot: status.value.slot || undefined,
-        err: status.value.err,
-        confirmations: status.value.confirmations || undefined
+      const result: { confirmed: boolean; slot?: number; err?: any; confirmations?: number } = {
+        confirmed: status.value.confirmationStatus === 'confirmed' ||
+          status.value.confirmationStatus === 'finalized'
       };
+
+      if (status.value.slot !== null) {
+        result.slot = status.value.slot;
+      }
+
+      if (status.value.err !== null) {
+        result.err = status.value.err;
+      }
+
+      if (status.value.confirmations !== null) {
+        result.confirmations = status.value.confirmations;
+      }
+
+      return result;
 
     } catch (error) {
       this.logger.verbose(`Error getting transaction status: ${error}`);
@@ -254,10 +265,10 @@ export class TransactionService {
     const baseDelay = env.retryBaseDelayMs;
     const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
     const maxDelay = 30000; // Max 30 seconds
-    
+
     // Add jitter to prevent thundering herd
     const jitter = Math.random() * 1000;
-    
+
     return Math.min(exponentialDelay + jitter, maxDelay);
   }
 
@@ -273,16 +284,16 @@ export class TransactionService {
       // Handle instruction errors
       if ('InstructionError' in error && Array.isArray(error.InstructionError)) {
         const [instructionIndex, instructionError] = error.InstructionError;
-        
+
         if (typeof instructionError === 'object') {
           if ('Custom' in instructionError) {
             return `Instruction ${instructionIndex} failed with custom error ${instructionError.Custom}`;
           }
-          
+
           const errorType = Object.keys(instructionError)[0];
           return `Instruction ${instructionIndex} failed: ${errorType}`;
         }
-        
+
         return `Instruction ${instructionIndex} failed: ${instructionError}`;
       }
 
@@ -299,7 +310,7 @@ export class TransactionService {
    */
   private isRetryableError(error: Error): boolean {
     const message = error.message.toLowerCase();
-    
+
     // Network-related errors that are worth retrying
     const retryableErrors = [
       'timeout',
@@ -314,7 +325,7 @@ export class TransactionService {
       'service unavailable'
     ];
 
-    return retryableErrors.some(retryableError => 
+    return retryableErrors.some(retryableError =>
       message.includes(retryableError)
     );
   }
@@ -327,7 +338,7 @@ export class TransactionService {
   ): Promise<{ baseFee: number; priorityFee: number; total: number }> {
     try {
       const feeCalculator = await this.connection.getFeeForMessage(
-        transaction instanceof Transaction 
+        transaction instanceof Transaction
           ? transaction.compileMessage()
           : transaction.message,
         env.commitmentLevel
@@ -335,7 +346,7 @@ export class TransactionService {
 
       const baseFee = feeCalculator.value || 5000; // Fallback to 5000 lamports
       const priorityFee = env.priorityFeeMicroLamports;
-      
+
       return {
         baseFee,
         priorityFee,
@@ -344,7 +355,7 @@ export class TransactionService {
 
     } catch (error) {
       this.logger.verbose(`Fee estimation failed: ${error}`);
-      
+
       // Return conservative estimates
       return {
         baseFee: 5000,

@@ -36,6 +36,24 @@
 - Fee earnings estimation
 - Network statistics and performance metrics
 
+## 🎉 Current Status
+
+**✅ WORKING FEATURES:**
+- CLI interface with all commands functional
+- Solana RPC connection and wallet integration
+- Raydium SDK initialization
+- Environment configuration and validation
+- Comprehensive error handling and logging
+- TypeScript compilation and build system
+
+**🚧 IN DEVELOPMENT:**
+- Full Raydium liquidity operations (currently using simplified service)
+- Real-time pool data fetching (external API rate limiting)
+- Advanced position monitoring features
+
+**📚 EDUCATIONAL VALUE:**
+This template is **production-ready for learning** DeFi concepts, Solana development, and CLI tool creation. Students can study the architecture, understand the codebase, and learn best practices even with the simplified implementation.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -394,6 +412,33 @@ bun start withdraw
 # Test without executing
 bun start status --dry-run --verbose
 ```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**1. "Network connection issue" error:**
+- This is usually due to external API rate limiting (Jupiter tokens API)
+- The CLI will still show wallet balance and basic functionality
+- This is expected behavior in the current simplified implementation
+
+**2. "Test mode is disabled" warning:**
+- This is normal - the CLI is designed for real transactions
+- Use `--dry-run` flag for testing without executing transactions
+
+**3. TypeScript compilation errors:**
+- Run `bun install` to ensure all dependencies are installed
+- Make sure you're using Node.js v18+ and Bun
+
+**4. Private key format issues:**
+- Ensure your private key is in base58 format (not byte array)
+- The key should start with a letter/number, not brackets
+
+### Getting Help
+
+- Check the logs with `--verbose` flag for detailed information
+- Review the service architecture in `/src/services/`
+- Study the error handling patterns in the codebase
 
 **Happy Learning! 🚀**
 

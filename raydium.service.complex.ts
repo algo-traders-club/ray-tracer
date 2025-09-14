@@ -27,8 +27,8 @@ export class RaydiumService {
   private readonly CACHE_TTL = 30000; // 30 seconds
 
   constructor(
-    connection: Connection,
-    wallet: WalletService,
+    connection: Connection, 
+    wallet: WalletService, 
     logger: LoggerService,
     tokenService: TokenService,
     transactionService: TransactionService,
@@ -61,26 +61,26 @@ export class RaydiumService {
   public async getPoolInfo(useCache: boolean = true): Promise<PoolInfo> {
     const poolId = POOL_CONFIG.POOL_ID;
     const now = Date.now();
-
+    
     try {
       // Check cache first
-      if (useCache && this.poolCache.has(poolId) &&
-        (now - this.lastCacheUpdate) < this.CACHE_TTL) {
+      if (useCache && this.poolCache.has(poolId) && 
+          (now - this.lastCacheUpdate) < this.CACHE_TTL) {
         this.logger.verbose('Using cached pool info');
         return this.poolCache.get(poolId)!;
       }
 
       this.logger.verbose('Fetching fresh pool info from Raydium API');
-
+      
       // Try multiple methods to get pool data
       let poolData;
-
+      
       try {
         // Method 1: Use Raydium API
-        const apiData = await this.raydium.api.fetchPoolById({
+        const apiData = await this.raydium.api.fetchPoolById({ 
           ids: poolId
         });
-
+        
         if (apiData && apiData.length > 0) {
           poolData = apiData[0];
         }
@@ -110,24 +110,24 @@ export class RaydiumService {
         lpToken: new PublicKey(poolData.lpMint || poolData.lpToken || ''),
         liquidity: {
           tokenA: this.tokenService.rawToUi(
-            parseFloat(poolData.baseReserve || '0'),
+            parseFloat(poolData.baseReserve || '0'), 
             tokenAInfo.decimals
           ),
           tokenB: this.tokenService.rawToUi(
-            parseFloat(poolData.quoteReserve || '0'),
+            parseFloat(poolData.quoteReserve || '0'), 
             tokenBInfo.decimals
           ),
           total: parseFloat(poolData.lpSupply || '0')
         },
         price: {
           tokenA: parseFloat(poolData.price || '0'),
-          tokenB: parseFloat(poolData.price || '0') > 0 ?
+          tokenB: parseFloat(poolData.price || '0') > 0 ? 
             1 / parseFloat(poolData.price) : 0
         },
         fees24h: this.calculateFees24h(poolData),
-        volume24h: parseFloat(poolData.day?.volumeQuote ||
-          poolData.volume24h ||
-          poolData.dayVolume || '0')
+        volume24h: parseFloat(poolData.day?.volumeQuote || 
+                           poolData.volume24h || 
+                           poolData.dayVolume || '0')
       };
 
       // Cache the result
@@ -151,11 +151,11 @@ export class RaydiumService {
       // This is a simplified version - in reality you'd need to parse
       // the pool account data directly from the blockchain
       this.logger.verbose('Attempting direct pool data fetch...');
-
+      
       const poolAccount = await this.connection.getAccountInfo(
         new PublicKey(POOL_CONFIG.POOL_ID)
       );
-
+      
       if (!poolAccount) {
         return null;
       }
@@ -169,7 +169,7 @@ export class RaydiumService {
         lpSupply: '0',
         price: '0'
       };
-
+      
     } catch (error) {
       this.logger.verbose(`Direct pool fetch failed: ${error}`);
       return null;
@@ -184,7 +184,7 @@ export class RaydiumService {
       const feeA = parseFloat(poolData.day?.feeA || '0');
       const feeB = parseFloat(poolData.day?.feeB || '0');
       const totalFee = parseFloat(poolData.fees24h || '0');
-
+      
       return totalFee || (feeA + feeB);
     } catch {
       return 0;
@@ -197,7 +197,7 @@ export class RaydiumService {
   public async getLiquidityPosition(): Promise<LiquidityPosition | null> {
     try {
       const poolInfo = await this.getPoolInfo();
-
+      
       // Get user's LP token balance
       const tokenAccounts = await this.connection.getTokenAccountsByOwner(
         this.wallet.getPublicKey(),
@@ -211,7 +211,7 @@ export class RaydiumService {
       if (!tokenAccounts.value[0]) {
         return null;
       }
-
+      
       // TODO: Fix token account parsing - temporarily returning null
       // const accountData = tokenAccounts.value[0].account.data;
       // const tokenAccountInfo = parseTokenAccountResp({
@@ -327,7 +327,7 @@ export class RaydiumService {
 
       // Execute transaction
       const { txId } = await execute();
-
+      
       this.logger.progressComplete();
       this.logger.transaction(txId);
 
@@ -371,7 +371,7 @@ export class RaydiumService {
 
       // Execute transaction
       const { txId } = await execute();
-
+      
       this.logger.progressComplete();
       this.logger.transaction(txId);
 
@@ -395,7 +395,7 @@ export class RaydiumService {
   public async simulateTransaction(transaction: VersionedTransaction): Promise<boolean> {
     try {
       const result = await this.connection.simulateTransaction(transaction);
-
+      
       if (result.value.err) {
         this.logger.error(`Transaction simulation failed: ${JSON.stringify(result.value.err)}`);
         return false;
@@ -412,7 +412,7 @@ export class RaydiumService {
   /**
    * Get network status
    */
-  public async getNetworkStatus(): Promise<{ tps: number; blockHeight: number }> {
+  public async getNetworkStatus(): Promise<{tps: number; blockHeight: number}> {
     try {
       const [recentBlockhash, slot] = await Promise.all([
         this.connection.getRecentBlockhash(),
@@ -446,7 +446,7 @@ export class RaydiumService {
         return await operation();
       } catch (error) {
         lastError = error as Error;
-
+        
         if (i < maxRetries) {
           const delay = Math.min(1000 * Math.pow(2, i), 10000); // Exponential backoff
           this.logger.verbose(`Retry ${i + 1}/${maxRetries} after ${delay}ms`);

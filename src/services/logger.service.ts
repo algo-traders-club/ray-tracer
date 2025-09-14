@@ -6,17 +6,17 @@ import type { LogLevel } from '../types/index.js';
  * Provides clean, production-style console output for the CLI
  */
 export class LoggerService {
-  private verbose: boolean;
+  private isVerbose: boolean;
 
   constructor(verbose: boolean = false) {
-    this.verbose = verbose;
+    this.isVerbose = verbose;
   }
 
   /**
    * Set verbose mode
    */
   public setVerbose(verbose: boolean): void {
-    this.verbose = verbose;
+    this.isVerbose = verbose;
   }
 
   /**
@@ -113,7 +113,7 @@ export class LoggerService {
    * Log verbose message (only shown in verbose mode)
    */
   public verbose(message: string, emoji?: string): void {
-    if (this.verbose) {
+    if (this.isVerbose) {
       this.info(`[VERBOSE] ${message}`, emoji);
     }
   }

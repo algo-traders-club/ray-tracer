@@ -30,8 +30,9 @@
     "commander": "^11.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/bn.js": "^5.2.0",
     "@types/bs58": "^4.0.4",
+    "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
   },
   "engines": {

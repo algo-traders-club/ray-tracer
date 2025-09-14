@@ -85,7 +85,7 @@ export class ValidationService {
       return {
         isValid: true,
         amount: finalAmount,
-        warnings: warnings.length > 0 ? warnings : undefined
+        warnings: warnings.length > 0 ? warnings : []
       };
 
     } catch (error) {
@@ -142,7 +142,7 @@ export class ValidationService {
     return {
       isValid: true,
       slippage: numSlippage,
-      warnings: warnings.length > 0 ? warnings : undefined
+      warnings: warnings.length > 0 ? warnings : []
     };
   }
 
