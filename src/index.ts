@@ -4,7 +4,7 @@ import { Command } from 'commander';
 import { Connection } from '@solana/web3.js';
 import { LoggerService } from './services/logger.service.js';
 import { WalletService } from './services/wallet.service.js';
-import { RaydiumService } from './services/raydium.service.simple.js';
+import { RaydiumService } from './services/raydium.service.js';
 import { TokenService } from './services/token.service.js';
 import { TransactionService } from './services/transaction.service.js';
 import { ErrorHandlerService } from './services/error-handler.service.js';
